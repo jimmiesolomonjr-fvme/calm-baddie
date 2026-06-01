@@ -1,65 +1,171 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import BottomNav from "@/components/BottomNav";
+import { coloringImages, categories, type Category } from "@/lib/images";
+import { getAllSavedArt, deleteSavedArt, type SavedArt } from "@/lib/storage";
+
+export default function HomePage() {
+  const [activeTab, setActiveTab] = useState<"library" | "my-art">("library");
+  const [activeCategory, setActiveCategory] = useState<Category>("All");
+  const [savedArt, setSavedArt] = useState<SavedArt[]>([]);
+
+  useEffect(() => {
+    setSavedArt(getAllSavedArt());
+  }, [activeTab]);
+
+  const filteredImages =
+    activeCategory === "All"
+      ? coloringImages
+      : coloringImages.filter((img) => img.category === activeCategory);
+
+  const handleDeleteArt = (id: string) => {
+    deleteSavedArt(id);
+    setSavedArt(getAllSavedArt());
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <header className="bg-pink-gradient pt-[env(safe-area-inset-top)]">
+        <div className="px-4 pt-3 pb-2 flex justify-center">
+          <Image
+            src="/logo.png"
+            alt="Calm Baddie - Adult Coloring Book"
+            width={220}
+            height={220}
+            className="object-contain"
+            priority
+          />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+
+        {/* Category tabs (library only) */}
+        {activeTab === "library" && (
+          <div className="flex gap-2 px-4 pb-3 overflow-x-auto hide-scrollbar">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-all ${
+                  activeCategory === cat
+                    ? "bg-pink-500 text-white shadow-md shadow-pink-200"
+                    : "bg-white/70 text-pink-400 border border-pink-200"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
+      </header>
+
+      {/* Content */}
+      <main className="flex-1 overflow-y-auto hide-scrollbar px-3 py-3">
+        {activeTab === "library" ? (
+          /* Library Grid */
+          <div className="grid grid-cols-2 gap-3">
+            {filteredImages.map((img) => (
+              <Link
+                key={img.id}
+                href={`/color/${img.id}`}
+                className="image-card relative rounded-2xl overflow-hidden border-2 border-pink-200 bg-white shadow-sm"
+              >
+                {img.isNew && (
+                  <span className="absolute top-2 right-2 bg-green-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-md z-10">
+                    New
+                  </span>
+                )}
+                <div className="aspect-square relative">
+                  <Image
+                    src={img.src}
+                    alt={img.name}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                  />
+                </div>
+                <div className="px-2 py-1.5 bg-pink-50">
+                  <p className="text-xs font-bold text-pink-600 truncate">
+                    {img.name}
+                  </p>
+                </div>
+              </Link>
+            ))}
+
+            {filteredImages.length === 0 && (
+              <div className="col-span-2 text-center py-20">
+                <p className="text-5xl mb-3">🎨</p>
+                <p className="text-pink-400 font-bold">
+                  More designs coming soon!
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* My Art Grid */
+          <div>
+            {savedArt.length === 0 ? (
+              <div className="text-center py-20">
+                <p className="text-5xl mb-3">🖼️</p>
+                <p className="text-pink-400 font-bold">
+                  No art yet! Start coloring to see your creations here.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                {savedArt.map((art) => (
+                  <div
+                    key={art.id}
+                    className="image-card relative rounded-2xl overflow-hidden border-2 border-pink-200 bg-white shadow-sm"
+                  >
+                    {art.completed && (
+                      <span className="absolute top-2 left-2 bg-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md z-10">
+                        Done
+                      </span>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (confirm("Delete this artwork?")) {
+                          handleDeleteArt(art.id);
+                        }
+                      }}
+                      className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-400 text-white text-xs flex items-center justify-center z-10"
+                    >
+                      ×
+                    </button>
+                    <Link href={`/color/${art.imageId}`}>
+                      <div className="aspect-square relative">
+                        <Image
+                          src={art.thumbnail}
+                          alt={art.imageName}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                          unoptimized
+                        />
+                      </div>
+                      <div className="px-2 py-1.5 bg-pink-50">
+                        <p className="text-xs font-bold text-pink-600 truncate">
+                          {art.imageName}
+                        </p>
+                        <p className="text-[10px] text-pink-300">
+                          {new Date(art.updatedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </main>
+
+      {/* Bottom Nav */}
+      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
 }
