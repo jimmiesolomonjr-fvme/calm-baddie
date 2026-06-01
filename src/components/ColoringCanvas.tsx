@@ -81,6 +81,10 @@ export default function ColoringCanvas({
   const historyRef = useRef<HistoryEntry[]>([]);
   const historyIdxRef = useRef(-1);
 
+  // Track last gradient per region to flip on repeat
+  // Key: region bounds string, Value: { colors, flipped }
+  const lastGradientRef = useRef<Map<string, { colors: string; flipped: boolean }>>(new Map());
+
   // Canvas dimensions
   const dimsRef = useRef({ width: 0, height: 0 });
 
@@ -497,9 +501,17 @@ export default function ColoringCanvas({
       // Compute the final filled image
       let filledImageData: ImageData;
       if (activeTool === "gradient") {
+        // Check if same gradient was just applied to this region — flip it
+        const regionKey = `${minY}-${maxY}`;
+        const gradColors = `${selectedColor}-${gradientColor2}`;
+        const last = lastGradientRef.current.get(regionKey);
+        const shouldFlip = last && last.colors === gradColors ? !last.flipped : false;
+
         filledImageData = gradientFill(
-          imageData, x, y, color, hexToRgba(gradientColor2)
+          imageData, x, y, color, hexToRgba(gradientColor2), {}, shouldFlip
         );
+
+        lastGradientRef.current.set(regionKey, { colors: gradColors, flipped: shouldFlip });
       } else {
         filledImageData = floodFill(imageData, x, y, color);
       }

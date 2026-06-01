@@ -228,7 +228,8 @@ export function gradientFill(
   startY: number,
   color1: RGBA,
   color2: RGBA,
-  options: FloodFillOptions = {}
+  options: FloodFillOptions = {},
+  flipped = false
 ): ImageData {
   const { outlineThreshold = 50 } = options;
   const { width, height, data } = imageData;
@@ -245,14 +246,16 @@ export function gradientFill(
 
   const { filled, minY, maxY } = findRegion(data, width, height, startX, startY, outlineThreshold);
 
-  // Apply gradient
+  // Apply gradient (flipped = bottom-to-top)
+  const top = flipped ? color2 : color1;
+  const bottom = flipped ? color1 : color2;
   const range = maxY - minY || 1;
   for (let y = minY; y <= maxY; y++) {
     const t = (y - minY) / range;
     const color: RGBA = {
-      r: Math.round(color1.r * (1 - t) + color2.r * t),
-      g: Math.round(color1.g * (1 - t) + color2.g * t),
-      b: Math.round(color1.b * (1 - t) + color2.b * t),
+      r: Math.round(top.r * (1 - t) + bottom.r * t),
+      g: Math.round(top.g * (1 - t) + bottom.g * t),
+      b: Math.round(top.b * (1 - t) + bottom.b * t),
       a: 255,
     };
     for (let x = 0; x < width; x++) {
