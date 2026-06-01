@@ -28,6 +28,10 @@ function setPixel(data: Uint8ClampedArray, idx: number, color: RGBA) {
   data[idx + 3] = color.a;
 }
 
+function colorDistance(a: RGBA, b: RGBA): number {
+  return Math.abs(a.r - b.r) + Math.abs(a.g - b.g) + Math.abs(a.b - b.b) + Math.abs(a.a - b.a);
+}
+
 function isOutline(pixel: RGBA, threshold: number): boolean {
   return pixel.r < threshold && pixel.g < threshold && pixel.b < threshold && pixel.a > 128;
 }
@@ -62,9 +66,13 @@ export interface FloodFillOptions {
 }
 
 /**
- * Find the entire enclosed region by spreading from a point,
- * stopping only at outline boundaries. Color-agnostic — works whether
- * the region is white, solid-filled, or gradient-filled.
+ * Find the entire enclosed region by spreading from a point.
+ * Hybrid approach:
+ *  - Stops at black outline boundaries (always)
+ *  - Stops at pixels that are drastically different from the start color
+ *    (prevents bleeding into already-colored adjacent regions)
+ *  - Uses a generous color tolerance (350) so gradients within the same
+ *    region can still be fully re-filled
  */
 export function findRegion(
   data: Uint8ClampedArray,
@@ -78,6 +86,21 @@ export function findRegion(
   let minY = height;
   let maxY = 0;
 
+  const startIdx = (startY * width + startX) * 4;
+  const startColor = getPixel(data, startIdx);
+
+  // Max color distance: generous enough for gradients (~350),
+  // but blocks clearly different solid colors (brown face vs white hair = ~500+)
+  const maxDist = 350;
+
+  function shouldStop(idx: number): boolean {
+    const pixel = getPixel(data, idx);
+    if (isOutline(pixel, outlineThreshold)) return true;
+    // Check color distance from start pixel
+    const dist = colorDistance(pixel, startColor);
+    return dist > maxDist;
+  }
+
   const stack: number[] = [startY * width + startX];
 
   while (stack.length > 0) {
@@ -88,8 +111,7 @@ export function findRegion(
     const x = pixelIdx - y * width;
 
     const idx = pixelIdx * 4;
-    const pixel = getPixel(data, idx);
-    if (isOutline(pixel, outlineThreshold)) continue;
+    if (shouldStop(idx)) continue;
 
     filled[pixelIdx] = 1;
 
@@ -97,7 +119,7 @@ export function findRegion(
     let left = x;
     while (left > 0) {
       const li = (y * width + (left - 1)) * 4;
-      if (isOutline(getPixel(data, li), outlineThreshold)) break;
+      if (shouldStop(li)) break;
       left--;
       filled[y * width + left] = 1;
     }
@@ -106,7 +128,7 @@ export function findRegion(
     let right = x;
     while (right < width - 1) {
       const ri = (y * width + (right + 1)) * 4;
-      if (isOutline(getPixel(data, ri), outlineThreshold)) break;
+      if (shouldStop(ri)) break;
       right++;
       filled[y * width + right] = 1;
     }
