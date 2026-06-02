@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import ColoringCanvas, { type Tool, type EyedropperResult } from "@/components/ColoringCanvas";
 import ColorPalette from "@/components/ColorPalette";
 import Toolbar from "@/components/Toolbar";
+import AdBanner from "@/components/AdBanner";
 import { getImageById } from "@/lib/images";
 import { downloadArt, shareArt } from "@/lib/storage";
 
@@ -38,6 +39,13 @@ export default function ColorPage() {
   const [selectedColor, setSelectedColor] = useState("#FF69B4");
   const [gradientColor2, setGradientColor2] = useState("#FFD700");
   const [activeTool, setActiveTool] = useState<Tool>("fill");
+  const [showAd, setShowAd] = useState(true);
+
+  // Auto-dismiss ad after 5 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => setShowAd(false), 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleUndo = useCallback(() => {
     window.dispatchEvent(new Event("coloring-undo"));
@@ -123,6 +131,19 @@ export default function ColorPage() {
         brushSize={10}
         onEyedrop={handleEyedrop}
       />
+
+      {/* Dismissible ad */}
+      {showAd && (
+        <div className="relative">
+          <AdBanner slot="0987654321" format="horizontal" />
+          <button
+            onClick={() => setShowAd(false)}
+            className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/50 text-white text-xs flex items-center justify-center"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {/* Color palette at bottom */}
       <div className="pb-[env(safe-area-inset-bottom)]">

@@ -32,6 +32,11 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap"
           rel="stylesheet"
         />
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+          crossOrigin="anonymous"
+        />
       </head>
       <body className="h-full flex flex-col">
         {children}

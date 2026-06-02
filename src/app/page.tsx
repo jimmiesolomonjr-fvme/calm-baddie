@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import BottomNav from "@/components/BottomNav";
+import AdBanner from "@/components/AdBanner";
 import { coloringImages, categories, type Category } from "@/lib/images";
 import { getAllSavedArt, deleteSavedArt, type SavedArt } from "@/lib/storage";
 
@@ -63,6 +64,9 @@ export default function HomePage() {
 
       {/* Content */}
       <main className="flex-1 overflow-y-auto hide-scrollbar px-3 py-3">
+        {/* Ad banner */}
+        <AdBanner slot="1234567890" format="horizontal" className="mb-3" />
+
         {activeTab === "library" ? (
           /* Library Grid */
           <div className="grid grid-cols-2 gap-3">
