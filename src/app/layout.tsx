@@ -3,12 +3,48 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Calm Baddie",
-  description: "A relaxing coloring book app for baddies",
+  title: "Color Baddies — Free Online Adult Coloring Book | Baddie Coloring Pages",
+  description:
+    "Color Baddies is a free online adult coloring book featuring bold, beautiful baddie illustrations. Tap to fill with solid colors, gradients, and skin tones. No download required — color right in your browser on phone or desktop.",
+  keywords: [
+    "adult coloring book",
+    "online coloring book",
+    "free coloring pages",
+    "baddie coloring pages",
+    "coloring app",
+    "color by tap",
+    "digital coloring book",
+    "relaxing coloring",
+    "black girl coloring pages",
+    "adult coloring online free",
+    "coloring book for adults",
+    "stress relief coloring",
+    "gradient coloring",
+    "skin tone coloring",
+  ],
+  openGraph: {
+    title: "Color Baddies — Free Online Adult Coloring Book",
+    description:
+      "Bold, beautiful baddie illustrations you can color right in your browser. Solid fills, gradients, skin tones — no download needed.",
+    url: "https://colorbaddies.com",
+    siteName: "Color Baddies",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Color Baddies — Free Online Adult Coloring Book",
+    description:
+      "Bold, beautiful baddie illustrations you can color right in your browser. Solid fills, gradients, skin tones — no download needed.",
+  },
+  metadataBase: new URL("https://colorbaddies.com"),
+  alternates: {
+    canonical: "/",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Calm Baddie",
+    title: "Color Baddies",
   },
 };
 
