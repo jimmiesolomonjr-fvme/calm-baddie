@@ -71,6 +71,46 @@ export const coloringImages: ColoringImage[] = [
     premium: false,
     isNew: true,
   },
+  {
+    id: "studio-session",
+    name: "Studio Session",
+    src: "/images/studio-session.png",
+    category: "Lifestyle",
+    premium: false,
+    isNew: true,
+  },
+  {
+    id: "mirror-selfie",
+    name: "Mirror Selfie",
+    src: "/images/mirror-selfie.png",
+    category: "Baddie",
+    premium: false,
+    isNew: true,
+  },
+  {
+    id: "moto-baddie",
+    name: "Moto Baddie",
+    src: "/images/moto-baddie.png",
+    category: "Baddie",
+    premium: false,
+    isNew: true,
+  },
+  {
+    id: "dinner-date",
+    name: "Dinner Date",
+    src: "/images/dinner-date.png",
+    category: "Lifestyle",
+    premium: false,
+    isNew: true,
+  },
+  {
+    id: "iced-coffee",
+    name: "Iced Coffee",
+    src: "/images/iced-coffee.png",
+    category: "Lifestyle",
+    premium: false,
+    isNew: true,
+  },
 ];
 
 export function getImagesByCategory(category: Category): ColoringImage[] {
