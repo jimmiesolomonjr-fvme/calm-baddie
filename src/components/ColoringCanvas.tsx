@@ -91,6 +91,13 @@ export default function ColoringCanvas({
   // Animation lock — prevents interaction during fill animation
   const isAnimatingRef = useRef(false);
 
+  // Sampled color indicator for eyedropper
+  const [sampledColor, setSampledColor] = useState<{
+    color: string;
+    x: number;
+    y: number;
+  } | null>(null);
+
   const pushHistory = useCallback(() => {
     const ctx = ctxRef.current;
     if (!ctx) return;
@@ -342,7 +349,7 @@ export default function ColoringCanvas({
 
   // Eyedropper: sample color at point. Shift = grab gradient (sample top & bottom of region).
   const handleEyedrop = useCallback(
-    (x: number, y: number) => {
+    (x: number, y: number, screenX?: number, screenY?: number) => {
       const ctx = ctxRef.current;
       if (!ctx || !onEyedrop) return;
       const { width, height } = dimsRef.current;
@@ -358,6 +365,20 @@ export default function ColoringCanvas({
       };
 
       const tappedColor = toHex((py * width + px) * 4);
+
+      // Show sampled color indicator at tap position
+      if (screenX !== undefined && screenY !== undefined) {
+        const container = containerRef.current;
+        if (container) {
+          const rect = container.getBoundingClientRect();
+          setSampledColor({
+            color: tappedColor,
+            x: screenX - rect.left,
+            y: screenY - rect.top,
+          });
+          setTimeout(() => setSampledColor(null), 1200);
+        }
+      }
 
       if (shiftHeldRef.current) {
         // Gradient mode: scan up and down from tap point to find region bounds,
@@ -626,7 +647,7 @@ export default function ColoringCanvas({
       if (g.isPanning && !g.moved) {
         const [cx, cy] = screenToCanvas(e.clientX, e.clientY);
         if (activeTool === "eyedropper") {
-          handleEyedrop(cx, cy);
+          handleEyedrop(cx, cy, e.clientX, e.clientY);
         } else {
           handleFill(cx, cy);
         }
@@ -668,7 +689,10 @@ export default function ColoringCanvas({
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
       onWheel={handleWheel}
-      style={{ touchAction: "none" }}
+      style={{
+        touchAction: "none",
+        cursor: activeTool === "eyedropper" ? "crosshair" : "default",
+      }}
     >
       {/* Checkerboard background pattern */}
       <div
@@ -689,6 +713,28 @@ export default function ColoringCanvas({
           imageRendering: "auto",
         }}
       />
+
+      {/* Sampled color indicator */}
+      {sampledColor && (
+        <div
+          className="absolute z-40 pointer-events-none animate-bounce"
+          style={{
+            left: sampledColor.x - 24,
+            top: sampledColor.y - 64,
+          }}
+        >
+          <div className="flex flex-col items-center">
+            <div
+              className="w-12 h-12 rounded-full border-4 border-white shadow-lg"
+              style={{ backgroundColor: sampledColor.color }}
+            />
+            <div className="mt-1 px-2 py-0.5 rounded-full bg-black/70 text-white text-[10px] font-bold">
+              {sampledColor.color.toUpperCase()}
+            </div>
+            <div className="w-0 h-0 border-l-[6px] border-r-[6px] border-t-[8px] border-l-transparent border-r-transparent border-t-black/70" />
+          </div>
+        </div>
+      )}
 
       {/* Resume Modal */}
       {showResumeModal && (

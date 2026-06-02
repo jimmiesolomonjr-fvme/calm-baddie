@@ -1,6 +1,17 @@
 "use client";
 
 import type { Tool } from "./ColoringCanvas";
+import {
+  PaintBrushIcon,
+  SwatchIcon,
+  EyeDropperIcon,
+  ArrowPathIcon,
+  ChevronLeftIcon,
+  TrashIcon,
+  ArrowUturnLeftIcon,
+  ArrowUturnRightIcon,
+} from "@heroicons/react/24/solid";
+import type { ComponentType, SVGProps } from "react";
 
 interface Props {
   activeTool: Tool;
@@ -13,11 +24,11 @@ interface Props {
   onClearAll: () => void;
 }
 
-const tools: { id: Tool; icon: string; label: string; hint?: string }[] = [
-  { id: "fill", icon: "🪣", label: "Solid Fill" },
-  { id: "gradient", icon: "🌈", label: "Gradient Fill" },
-  { id: "eyedropper", icon: "💧", label: "Color Picker", hint: "Shift = grab gradient" },
-  { id: "eraser", icon: "🧹", label: "Eraser" },
+const tools: { id: Tool; Icon: ComponentType<SVGProps<SVGSVGElement>>; label: string }[] = [
+  { id: "fill", Icon: PaintBrushIcon, label: "Solid Fill" },
+  { id: "gradient", Icon: SwatchIcon, label: "Gradient Fill" },
+  { id: "eyedropper", Icon: EyeDropperIcon, label: "Color Picker" },
+  { id: "eraser", Icon: ArrowPathIcon, label: "Eraser" },
 ];
 
 export default function Toolbar({
@@ -36,11 +47,9 @@ export default function Toolbar({
       <div className="flex items-center justify-between px-3 py-2 border-b border-pink-100">
         <button
           onClick={onBack}
-          className="flex items-center gap-1 text-pink-500 font-bold text-sm"
+          className="flex items-center gap-0.5 text-pink-500 font-bold text-sm"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
+          <ChevronLeftIcon className="w-5 h-5" />
           Back
         </button>
 
@@ -50,33 +59,21 @@ export default function Toolbar({
             className="w-9 h-9 rounded-full bg-pink-50 flex items-center justify-center active:bg-pink-100"
             title="Undo"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 7v6h6" />
-              <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6.69 3L3 13" />
-            </svg>
+            <ArrowUturnLeftIcon className="w-[18px] h-[18px] text-pink-500" />
           </button>
           <button
             onClick={onRedo}
             className="w-9 h-9 rounded-full bg-pink-50 flex items-center justify-center active:bg-pink-100"
             title="Redo"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 7v6h-6" />
-              <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6.69 3L21 13" />
-            </svg>
+            <ArrowUturnRightIcon className="w-[18px] h-[18px] text-pink-500" />
           </button>
           <button
             onClick={onClearAll}
             className="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center active:bg-red-100"
             title="Clear All"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 6h18" />
-              <path d="M8 6V4h8v2" />
-              <path d="M5 6l1 14h12l1-14" />
-              <path d="M10 11v6" />
-              <path d="M14 11v6" />
-            </svg>
+            <TrashIcon className="w-[18px] h-[18px] text-red-400" />
           </button>
         </div>
 
@@ -108,8 +105,18 @@ export default function Toolbar({
                 : "bg-transparent"
             }`}
           >
-            <span className="text-lg">{tool.icon}</span>
-            <span className="text-[10px] font-bold text-pink-500">{tool.label}</span>
+            <tool.Icon
+              className={`w-6 h-6 ${
+                activeTool === tool.id ? "text-pink-600" : "text-pink-400"
+              }`}
+            />
+            <span
+              className={`text-[10px] font-bold ${
+                activeTool === tool.id ? "text-pink-600" : "text-pink-400"
+              }`}
+            >
+              {tool.label}
+            </span>
           </button>
         ))}
       </div>
