@@ -63,6 +63,14 @@ export const coloringImages: ColoringImage[] = [
     premium: false,
     isNew: true,
   },
+  {
+    id: "shopping-spree",
+    name: "Shopping Spree",
+    src: "/images/shopping-spree.png",
+    category: "Fashion",
+    premium: false,
+    isNew: true,
+  },
 ];
 
 export function getImagesByCategory(category: Category): ColoringImage[] {
