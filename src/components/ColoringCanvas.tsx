@@ -88,6 +88,9 @@ export default function ColoringCanvas({
   // Canvas dimensions
   const dimsRef = useRef({ width: 0, height: 0 });
 
+  // Original image data for outline detection (so user-painted black != outline)
+  const originalDataRef = useRef<Uint8ClampedArray | null>(null);
+
   // Animation lock — prevents interaction during fill animation
   const isAnimatingRef = useRef(false);
 
@@ -303,6 +306,11 @@ export default function ColoringCanvas({
       canvas.height = img.height;
       dimsRef.current = { width: img.width, height: img.height };
 
+      // Capture original image data for outline detection
+      // (so user-painted black won't be treated as an outline)
+      ctx.drawImage(img, 0, 0);
+      originalDataRef.current = ctx.getImageData(0, 0, img.width, img.height).data;
+
       const saved = loadProgress(imageId);
       if (saved) {
         // Show the resume modal
@@ -487,6 +495,8 @@ export default function ColoringCanvas({
       const imageData = ctx.getImageData(0, 0, width, height);
       const color = hexToRgba(selectedColor);
 
+      const origData = originalDataRef.current || undefined;
+
       if (activeTool === "eraser") {
         // Eraser: instant (no animation needed)
         const origCanvas = document.createElement("canvas");
@@ -496,17 +506,17 @@ export default function ColoringCanvas({
         let result: ImageData;
         if (origCtx && imageRef.current) {
           origCtx.drawImage(imageRef.current, 0, 0);
-          const origData = origCtx.getImageData(0, 0, width, height);
+          const origImgData = origCtx.getImageData(0, 0, width, height);
           const idx = (ry * width + rx) * 4;
           const origColor = {
-            r: origData.data[idx],
-            g: origData.data[idx + 1],
-            b: origData.data[idx + 2],
-            a: origData.data[idx + 3],
+            r: origImgData.data[idx],
+            g: origImgData.data[idx + 1],
+            b: origImgData.data[idx + 2],
+            a: origImgData.data[idx + 3],
           };
-          result = floodFill(imageData, x, y, origColor);
+          result = floodFill(imageData, x, y, origColor, {}, origData);
         } else {
-          result = floodFill(imageData, x, y, { r: 255, g: 255, b: 255, a: 255 });
+          result = floodFill(imageData, x, y, { r: 255, g: 255, b: 255, a: 255 }, {}, origData);
         }
         ctx.putImageData(result, 0, 0);
         pushHistory();
@@ -516,7 +526,7 @@ export default function ColoringCanvas({
 
       // Find the region first
       const { filled: regionFilled, minY, maxY } = findRegion(
-        imageData.data, width, height, rx, ry, 50
+        imageData.data, width, height, rx, ry, 50, origData
       );
 
       // Compute the final filled image
@@ -529,12 +539,12 @@ export default function ColoringCanvas({
         const shouldFlip = last && last.colors === gradColors ? !last.flipped : false;
 
         filledImageData = gradientFill(
-          imageData, x, y, color, hexToRgba(gradientColor2), {}, shouldFlip
+          imageData, x, y, color, hexToRgba(gradientColor2), {}, shouldFlip, origData
         );
 
         lastGradientRef.current.set(regionKey, { colors: gradColors, flipped: shouldFlip });
       } else {
-        filledImageData = floodFill(imageData, x, y, color);
+        filledImageData = floodFill(imageData, x, y, color, {}, origData);
       }
 
       // Animate the reveal

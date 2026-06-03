@@ -111,6 +111,30 @@ export const coloringImages: ColoringImage[] = [
     premium: false,
     isNew: true,
   },
+  {
+    id: "slam-cover",
+    name: "SLAM Cover",
+    src: "/images/slam-cover.png",
+    category: "Baddie",
+    premium: false,
+    isNew: true,
+  },
+  {
+    id: "dance-battle",
+    name: "Dance Battle",
+    src: "/images/dance-battle.png",
+    category: "Lifestyle",
+    premium: false,
+    isNew: true,
+  },
+  {
+    id: "beach-baddies",
+    name: "Beach Baddies",
+    src: "/images/beach-baddies.png",
+    category: "Lifestyle",
+    premium: false,
+    isNew: true,
+  },
 ];
 
 export function getImagesByCategory(category: Category): ColoringImage[] {

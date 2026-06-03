@@ -6,15 +6,23 @@ import Image from "next/image";
 import BottomNav from "@/components/BottomNav";
 import AdBanner from "@/components/AdBanner";
 import { coloringImages, categories, type Category } from "@/lib/images";
-import { getAllSavedArt, deleteSavedArt, type SavedArt } from "@/lib/storage";
+import { getAllSavedArt, deleteSavedArt, loadProgress, type SavedArt } from "@/lib/storage";
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<"library" | "my-art">("library");
   const [activeCategory, setActiveCategory] = useState<Category>("All");
   const [savedArt, setSavedArt] = useState<SavedArt[]>([]);
+  const [savedThumbnails, setSavedThumbnails] = useState<Record<string, string>>({});
 
   useEffect(() => {
     setSavedArt(getAllSavedArt());
+    // Build map of imageId -> thumbnail for colored previews on library grid
+    const thumbs: Record<string, string> = {};
+    for (const img of coloringImages) {
+      const saved = loadProgress(img.id);
+      if (saved) thumbs[img.id] = saved.thumbnail;
+    }
+    setSavedThumbnails(thumbs);
   }, [activeTab]);
 
   const filteredImages =
@@ -79,18 +87,24 @@ export default function HomePage() {
                 href={`/color/${img.id}`}
                 className="image-card relative rounded-2xl overflow-hidden border-2 border-pink-200 bg-white shadow-sm"
               >
-                {img.isNew && (
+                {img.isNew && !savedThumbnails[img.id] && (
                   <span className="absolute top-2 right-2 bg-green-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-md z-10">
                     New
                   </span>
                 )}
+                {savedThumbnails[img.id] && (
+                  <span className="absolute top-2 left-2 bg-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md z-10">
+                    In Progress
+                  </span>
+                )}
                 <div className="aspect-square relative">
                   <Image
-                    src={img.src}
+                    src={savedThumbnails[img.id] || img.src}
                     alt={img.name}
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 50vw, 25vw"
+                    unoptimized={!!savedThumbnails[img.id]}
                   />
                 </div>
                 <div className="px-2 py-1.5 bg-pink-50">

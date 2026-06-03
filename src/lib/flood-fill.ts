@@ -80,7 +80,8 @@ export function findRegion(
   height: number,
   startX: number,
   startY: number,
-  outlineThreshold: number
+  outlineThreshold: number,
+  originalData?: Uint8ClampedArray
 ): { filled: Uint8Array; minY: number; maxY: number } {
   const filled = new Uint8Array(width * height);
   let minY = height;
@@ -94,9 +95,13 @@ export function findRegion(
   const maxDist = 350;
 
   function shouldStop(idx: number): boolean {
+    // Use original image to determine outlines — this way user-painted black
+    // is NOT treated as an outline, only the actual line art is
+    const outlineSrc = originalData || data;
+    const outlinePixel = getPixel(outlineSrc, idx);
+    if (isOutline(outlinePixel, outlineThreshold)) return true;
+    // Check color distance from start pixel (using current canvas data)
     const pixel = getPixel(data, idx);
-    if (isOutline(pixel, outlineThreshold)) return true;
-    // Check color distance from start pixel
     const dist = colorDistance(pixel, startColor);
     return dist > maxDist;
   }
@@ -213,7 +218,8 @@ export function floodFill(
   startX: number,
   startY: number,
   fillColor: RGBA,
-  options: FloodFillOptions = {}
+  options: FloodFillOptions = {},
+  originalData?: Uint8ClampedArray
 ): ImageData {
   const { outlineThreshold = 50 } = options;
   const { width, height, data } = imageData;
@@ -225,10 +231,12 @@ export function floodFill(
     return imageData;
   }
 
-  const startPixel = getPixel(data, (startY * width + startX) * 4);
+  // Check outline against original image so user-painted black isn't treated as outline
+  const outlineSrc = originalData || data;
+  const startPixel = getPixel(outlineSrc, (startY * width + startX) * 4);
   if (isOutline(startPixel, outlineThreshold)) return imageData;
 
-  const { filled } = findRegion(data, width, height, startX, startY, outlineThreshold);
+  const { filled } = findRegion(data, width, height, startX, startY, outlineThreshold, originalData);
 
   // Apply fill color to all region pixels
   for (let i = 0; i < width * height; i++) {
@@ -251,7 +259,8 @@ export function gradientFill(
   color1: RGBA,
   color2: RGBA,
   options: FloodFillOptions = {},
-  flipped = false
+  flipped = false,
+  originalData?: Uint8ClampedArray
 ): ImageData {
   const { outlineThreshold = 50 } = options;
   const { width, height, data } = imageData;
@@ -263,10 +272,11 @@ export function gradientFill(
     return imageData;
   }
 
-  const startPixel = getPixel(data, (startY * width + startX) * 4);
+  const outlineSrc = originalData || data;
+  const startPixel = getPixel(outlineSrc, (startY * width + startX) * 4);
   if (isOutline(startPixel, outlineThreshold)) return imageData;
 
-  const { filled, minY, maxY } = findRegion(data, width, height, startX, startY, outlineThreshold);
+  const { filled, minY, maxY } = findRegion(data, width, height, startX, startY, outlineThreshold, originalData);
 
   // Apply gradient (flipped = bottom-to-top)
   const top = flipped ? color2 : color1;
