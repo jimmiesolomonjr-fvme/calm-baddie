@@ -135,6 +135,22 @@ export const coloringImages: ColoringImage[] = [
     premium: false,
     isNew: true,
   },
+  {
+    id: "money-moves",
+    name: "Money Moves",
+    src: "/images/money-moves.png",
+    category: "Baddie",
+    premium: false,
+    isNew: true,
+  },
+  {
+    id: "bunny-party",
+    name: "Bunny Party",
+    src: "/images/bunny-party.png",
+    category: "Fashion",
+    premium: false,
+    isNew: true,
+  },
 ];
 
 export function getImagesByCategory(category: Category): ColoringImage[] {
