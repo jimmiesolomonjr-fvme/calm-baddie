@@ -151,6 +151,14 @@ export const coloringImages: ColoringImage[] = [
     premium: false,
     isNew: true,
   },
+  {
+    id: "girls-night",
+    name: "Girls Night",
+    src: "/images/girls-night.png",
+    category: "Lifestyle",
+    premium: false,
+    isNew: true,
+  },
 ];
 
 export function getImagesByCategory(category: Category): ColoringImage[] {
