@@ -227,6 +227,13 @@ export default function HomePage() {
                 added regularly. No account needed, no sign-up, completely free.
               </p>
             </div>
+
+            {/* Footer links */}
+            <div className="flex justify-center gap-4 mt-4">
+              <Link href="/about" className="text-[11px] font-semibold text-pink-400 underline">About</Link>
+              <Link href="/privacy" className="text-[11px] font-semibold text-pink-400 underline">Privacy Policy</Link>
+              <Link href="/contact" className="text-[11px] font-semibold text-pink-400 underline">Contact</Link>
+            </div>
           </section>
         )}
       </main>
